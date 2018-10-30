@@ -1,0 +1,8 @@
+.DS_Store
+log.txt
+*.log
+*.csv
+*.swp
+*.iml
+node_modules/*
+.idea/*
