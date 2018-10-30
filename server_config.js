@@ -1,5 +1,7 @@
 "use strict";
 
+const common = require("./lib/util/common");
+
 const ENVS = {
     production: "production",
     staging: "staging",
@@ -14,11 +16,11 @@ const CONFIG_OBJ = {
     APP_SETTINGS: {
         PORT: process.env.PORT || 3100,
         MAX_CONNECTION: 500,
-        REQUEST_TIMEOUT: 5000,
+        REQUEST_TIMEOUT: 12000,
         VERSION: 0.1,
         MIN_LOG_LEVEL: IS_DEV_ENV ? "debug" : "info"
     },
-    DEFAULT_REQUEST_TIMEOUT: 3000,
+    SHIPPO_TIMEOUT: 10000,
     DEFAULT_ENCODING: "utf8",
     FLEXE_SHIPPO_API_TOKEN: "shippo_live_c88ada74233fbf7732a51d2d7cc2c69f337f73cb",
 };
@@ -38,7 +40,8 @@ const ERROR_CODES = {
     ERROR_REASON_CODES: {
         // the first three digits are the corresponding status code; the text will be used in log
         200000: "Success",
-        400101: "Invalid shippo API Token",
+        400101: "No address data provided",
+        400106: "Invalid shippo API Token",
         401101: "Missing api key",
         401102: "Unknown api key",
         404101: "Resource not found: %{details}",
@@ -71,23 +74,7 @@ module.exports = {
     },
 
     getConfig: function (key, defaultValue) {
-        let currentObj = CONFIG_OBJ;
-        if (key) {
-            let props = key.split(".");
-            for (let i = 0, len = props.length; i < len; i++) {
-                if (currentObj.hasOwnProperty(props[i])) {
-                    currentObj = currentObj[props[i]];
-                } else if (defaultValue) {
-                    return defaultValue;
-                } else {
-                    return null;
-                }
-            }
-            return currentObj;
-        }
-        else {
-            return currentObj;
-        }
+        return common.getValue(CONFIG_OBJ, key, defaultValue);
     },
 
     getErrorCodes: function() {

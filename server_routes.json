@@ -9,6 +9,6 @@
     "path": "/queries/validate-address"
   },
   "shippingRate": {
-    "path": "/queries/get-shipping-rate"
+    "path": "/queries/shipping-rate"
   }
 }
