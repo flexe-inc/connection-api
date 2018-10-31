@@ -33,33 +33,22 @@ const SUPPORTED_HTTP_HEADERS = {
 
 
 const ERROR_CODES = {
-    HTTP_STATUS_CODES: { // https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/206
-        200: 'Ok',
-        201: 'Created',
-        202: 'Accepted',
-        206: 'Partial Content',
-        400: 'Bad request',
-        401: 'Unauthorized',
-        404: 'Not Found',
-        405: 'Method Not Allowed',
-        415: 'Unsupported Media Type',
-        500: 'Wops, this is embarrassing',
-        504: 'Gateway Timeout',
-    },
-    ERROR_REASON_CODES: {
-        // the first three digits are the corresponding status code; the text will be used in log
-        400101: 'No address data provided',
-        400102: 'Invalid address data; must provide street1, city and state',
-        400106: 'Invalid Shippo API Token',
-        401101: 'Missing api key',
-        401102: 'Unknown api key',
-        404101: 'Resource not found: %{details}',
-        405101: '%{details} method is not allowed',
-        415101: 'Content-Type %{details} is not allowed',
-        500101: 'Unexpected error: %{details}',
-        500102: 'Shippo request timed-out',
-        504101: 'Server timed-out'
-    }
+    // the first three digits are the corresponding status code; the text will be used in log
+    '400-02-001': 'Invalid Shippo API Token',
+    '400-02-002': 'No address data provided',
+    '400-02-003': 'Invalid address data; must provide street1, city and state',
+    '400-02-004': 'Invalid shipmentData; must provide addressFrom, addressTo and parcel',
+    '400-02-005': 'Invalid parcel data in shipmentData; must provide length, width, height, distanceUnit, weight and massUnit',
+    '400-02-006': 'Invalid options data in shipmentData; must be a JSON',
+    '400-02-007': 'Invalid metadata data in shipmentData; must be a string',
+    '401-01-001': 'Missing api key',
+    '401-01-002': 'Unknown api key',
+    '404-01-001': 'Resource not found: %{details}',
+    '405-01-001': '%{details} method is not allowed',
+    '415-01-001': 'Content-Type %{details} is not allowed',
+    '500-01-001': 'Unexpected error: %{details}',
+    '500-02-001': 'Shippo request timed-out',
+    '504-01-001': 'Server timed-out'
 };
 
 const CLIENT_SECRETS = {

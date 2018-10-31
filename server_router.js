@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const config = require('./server_config');
 const auditMonitor = require('./lib/middlewares/audit_monitor');
 const gateControl = require('./lib/middlewares/gate_control');
-const respondError = require('./lib/middlewares/respond_error');
+const createResponse = require('./lib/middlewares/create_response');
 const logger = require('./lib/util/logger');
 const CustomError = require('./lib/util/custom_error');
 const serverRoutes = require('./server_routes.js');
@@ -25,8 +25,8 @@ function serverErrorHandler(err, req, res, next) {
         return;
     }
 
-    let error = (err.code === 'ETIMEDOUT') ? new CustomError('504101') : new CustomError('500101', err.message + err.stack);
-    respondError(req, res, error);
+    let error = (err.code === 'ETIMEDOUT') ? new CustomError('504-01-001') : new CustomError('500-01-001', err.message + err.stack);
+    createResponse.failure(req, res, error);
 }
 
 function setLoggerOptions(req, res, next) {
@@ -40,7 +40,7 @@ function setLoggerOptions(req, res, next) {
 function preprocessRequestResponse(req, res, next) {
     let contentType = req.get(config.getSupportedHttpHeaders().contentType);
     if (contentType !== 'application/json') {
-        respondError(req, res, new CustomError('415101', contentType));
+        createResponse.failure(req, res, new CustomError('415-01-001', contentType));
         return;
     }
     // convert all the parameters keys into lower case
@@ -92,8 +92,8 @@ module.exports = function(server) {
     }
 
     server.all('*', (req, res) => {
-        let err = allRoutes.has(req.path) ? new CustomError('405101', req.method) : new CustomError('404101', req.path);
-        respondError(req, res, err);
+        let err = allRoutes.has(req.path) ? new CustomError('405-01-001', req.method) : new CustomError('404-01-001', req.path);
+        createResponse.failure(req, res, err);
     });
 
     server.use(serverErrorHandler);
