@@ -12,10 +12,19 @@ const CustomError = require("./lib/util/custom_error");
 const serverRoutes = require("./server_routes.json");
 const shippoClient = require("./lib/shippo/shippo_client");
 
+const allRoutes = (function() {
+    let definedRoutes = new Set();
+    for (let key in serverRoutes) {
+        definedRoutes.add(serverRoutes[key].path);
+    }
+    return definedRoutes;
+})();
+
 
 function serverErrorHandler(err, req, res, next) {
     if (res.headersSent) { // just because of your current problem, no need to exacerbate it.
-        return next(err);
+        next(err);
+        return;
     }
 
     let error = (err.code === "ETIMEDOUT") ? new CustomError("504101") : new CustomError("500101", err.message + err.stack);
@@ -25,12 +34,18 @@ function serverErrorHandler(err, req, res, next) {
 function setLoggerOptions(req, res, next) {
     logger.setOptions({
         level: config.getConfig("APP_SETTINGS.MIN_LOG_LEVEL"),
-        correlationId: req.get("Correlation-ID") || "",
+        correlationId: req.get(config.getSupportedHttpHeaders().correlationId) || "",
     });
     next();
 }
 
-function convertQueryKeyToLowerCase(req, res, next) {
+function preprocessRequest(req, res, next) {
+    let contentType = req.get(config.getSupportedHttpHeaders().contentType);
+    if (contentType !== "application/json") {
+        respondError(req, res, new CustomError("415101", contentType));
+        return;
+    }
+    // convert all the parameters keys into lower case
     for (let key in req.query) {
         if (req.query.hasOwnProperty(key)) {
             let lowerCaseKey = key.toLowerCase();
@@ -62,10 +77,11 @@ function handleHealthCheck(req, res) {
 
 function handleAddressValidation(req, res) {
 
-    const address = common.getValue(req, "body.data.address");
-    const shippoApiToken = common.getValue(req, "body.data.shippoApiToken");
+    const address = common.getIn(req, "body.data.address");
+    const shippoApiToken = common.getIn(req, "body.data.shippoApiToken");
     if (!address) {
-        return respondError(req, res, new CustomError("400101"));
+        respondError(req, res, new CustomError("400101"));
+        return
     }
     shippoClient.validateAddress(address, shippoApiToken, (err, data) => {
         if (req.timedout) {
@@ -80,7 +96,7 @@ function handleAddressValidation(req, res) {
 }
 
 function handleShippingRate(req, res) {
-    const shippoApiToken = common.getValue(req, "body.data.shippoApiToken");
+    const shippoApiToken = common.getIn(req, "body.data.shippoApiToken");
     shippoClient.getShippingRate(null, shippoApiToken, (err, data) => {
         if (req.timedout) {
             return;
@@ -98,7 +114,7 @@ module.exports = function(server) {
     server.use(responseTime());
     server.use(haltOnTimedout);
     server.use(setLoggerOptions);
-    server.use(convertQueryKeyToLowerCase);
+    server.use(preprocessRequest);
     server.use(gateControl);
     server.use(auditMonitor);
     server.use(bodyParser.json());
@@ -110,9 +126,8 @@ module.exports = function(server) {
     server.post(serverRoutes.shippingRate.path, handleShippingRate);
 
     server.all("*", (req, res) => {
-        let err = new CustomError("404101", req.method + " " + req.originalUrl);
-        logger.info(err.logMessage);
-        res.status(err.statusCode).json({ url: req.originalUrl, method: req.method, message: err.message });
+        let err = allRoutes.has(req.path) ? new CustomError("405101", req.method) : new CustomError("404101", req.path);
+        respondError(req, res, err);
     });
 
     server.use(serverErrorHandler);
