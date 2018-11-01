@@ -25,13 +25,13 @@ function serverErrorHandler(err, req, res, next) {
         return;
     }
 
-    let error = (err.code === 'ETIMEDOUT') ? new CustomError('504-01-001') : new CustomError('500-01-001', err.message + err.stack);
+    let error = (err.code === 'ETIMEDOUT') ? new CustomError('504-01-001') : new CustomError('500-01-001', err.message);
     createResponse.failure(req, res, error);
 }
 
 function setLoggerOptions(req, res, next) {
     logger.setOptions({
-        level: config.getConfig('APP_SETTINGS.MIN_LOG_LEVEL'),
+        level: config.getConfig('SERVER_SETTINGS.MIN_LOG_LEVEL'),
         correlationId: req.get(config.getSupportedHttpHeaders().correlationId) || '',
     });
     next();
@@ -65,7 +65,7 @@ function haltOnTimedout (req, res, next) {
 }
 
 module.exports = function(server) {
-    server.use(timeout(config.getConfig('APP_SETTINGS.REQUEST_TIMEOUT')));
+    server.use(timeout(config.getConfig('SERVER_SETTINGS.REQUEST_TIMEOUT')));
     server.use(responseTime());
     server.use(haltOnTimedout);
     server.use(setLoggerOptions);

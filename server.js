@@ -16,7 +16,7 @@ module.exports = (function () {
         process.setMaxListeners(50);
         events.EventEmitter.defaultMaxListeners = 50;
         // Shared App Configuration settings
-        server.set('port', config.getConfig('APP_SETTINGS.PORT'));
+        server.set('port', config.getConfig('SERVER_SETTINGS.PORT'));
 
         require('./server_router')(server);
 

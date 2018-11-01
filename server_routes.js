@@ -15,7 +15,7 @@ module.exports = {
         path: '/about',
         function: function(req, res) {
             res.status(200).json({
-                message: 'Server (Version ' + config.getConfig('APP_SETTINGS.VERSION') + ') developed by Flexe Inc. ' +
+                message: 'Server (Version ' + config.getConfig('SERVER_SETTINGS.VERSION') + ') developed by Flexe Inc. ' +
                     'All Rights reserved.'
             });
         }
