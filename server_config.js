@@ -40,10 +40,11 @@ const ERROR_CODES = {
     // the first three digits are the corresponding http status code
     '401-01-001': 'Missing api key',
     '401-01-002': 'Unknown api key',
-    '404-01-001': 'Resource not found: %{details}',
-    '405-01-001': '%{details} method is not allowed',
-    '415-01-001': 'Content-Type %{details} is not allowed',
+    '404-01-001': 'Resource not found: %{name}',
+    '405-01-001': '%{method} method is not allowed on %{path}',
+    '415-01-001': 'Content-Type %{name} is not allowed',
     '500-01-001': 'Unexpected error: %{details}',
+    '500-01-002': 'Unable to generate response; please retry if needed',
     '504-01-001': 'Server timed-out'
 };
 for (let module in MODULE_CONFIGS) {

@@ -25,7 +25,7 @@ function serverErrorHandler(err, req, res, next) {
         return;
     }
 
-    let error = (err.code === 'ETIMEDOUT') ? new CustomError('504-01-001') : new CustomError('500-01-001', err.message);
+    let error = (err.code === 'ETIMEDOUT') ? new CustomError('504-01-001') : new CustomError('500-01-001', { details: err.message });
     createResponse.failure(req, res, error);
 }
 
@@ -40,7 +40,7 @@ function setLoggerOptions(req, res, next) {
 function preprocessRequestResponse(req, res, next) {
     let contentType = req.get(config.getSupportedHttpHeaders().contentType);
     if (contentType !== 'application/json') {
-        createResponse.failure(req, res, new CustomError('415-01-001', contentType));
+        createResponse.failure(req, res, new CustomError('415-01-001', { name: contentType}));
         return;
     }
     // convert all the parameters keys into lower case
@@ -92,7 +92,9 @@ module.exports = function(server) {
     }
 
     server.all('*', (req, res) => {
-        let err = allRoutes.has(req.path) ? new CustomError('405-01-001', req.method) : new CustomError('404-01-001', req.path);
+        let err = allRoutes.has(req.path) ?
+            new CustomError('405-01-001', { method: req.method, path: req.path }) :
+            new CustomError('404-01-001', { name: req.path });
         createResponse.failure(req, res, err);
     });
 
